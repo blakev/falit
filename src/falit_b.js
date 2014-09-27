@@ -15,7 +15,7 @@ var paramTypes = [
     ['nan', _.isNaN],
     ['null', _.isNull],
     ['num', _.isNumber],
-    ['obj', _.isObject],
+    ['obj', function(a){ return _.isObject(a) && !_.isFunction(a) && !_.isArray(a); }],
     ['regex', _.isRegExp],
     ['str', _.isString],
     ['undefined', _.isUndefined]
@@ -177,19 +177,17 @@ var binder = function() {
                     
                     var posPass = transFuncs[bSigIndex++].parse(argsCount++, f.value);
 
+                    console.log(posPass);
+
                     if (posPass.defValue || posPass.passed) {
                         newArgs.push(posPass.value);
                     } else {
-                        if (!(bSigIndex < transFuncs.length - 1)) {
-                            passes = false;
-                            break;
-                        }
+                        passes = false;
                     }
 
                 }
             }
         })
-
 
         if (passes) {
             bindFunc.apply(this, newArgs);
@@ -211,6 +209,6 @@ function testFunc(timeDelay, options, callback) {
     )
 }
 
-var testFunc = binder(opt.int(0), opt.obj(1), req.func, testFunc);
+var testFunc = binder(opt.int, opt.obj({debug: true}), req.func, testFunc);
 
 testFunc(console.log)
