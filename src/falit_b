@@ -1,0 +1,29 @@
+function isFloat(x) {
+   return typeof x === 'number' && isFinite(x) && x % 1 >= 0;
+}
+
+function isInt(x) {
+    return typeof x === 'number' && isFinite(x) && x % 1 === 0;
+}
+
+var varChecksObj = function() {
+
+}
+
+var paramTypes = [
+'args', _.isArguments
+'array', _.isArray
+'bool', _.isBoolean
+'date', _.isDate
+'element', _.isElement
+'finite', _.isFinite
+'float', isFloat
+'func', _.isFunction
+'int', isInt
+'nan', _.isNaN
+'null', _.isNull
+'num', _.isNumber
+'obj', _.isObject
+'regex', _.isRegExp
+'str', _.isString
+'undefined', _.isUndefined
