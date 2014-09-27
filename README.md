@@ -97,7 +97,7 @@ Returns
 #### .required.*type*[(validationFn)]
 Used as place holder objects in `.binder` and `.template`
 
-[`opt`|`req`].*availableType* will reserve the parameter slot for a that given type.
+[`opt`|`req`].*availableType* will reserve the parameter slot for that given type.
 
 ```javascript
 falit.binder(required.int, required.obj, optional.func, ...)
@@ -146,7 +146,7 @@ var realExample = falit.binder(
     )
 
 >>> realExample(console.log)
-null [ null, { debug: false } ]
+null [ 0, { debug: false } ]
 
 >>> realExample(10, console.log)
 null [ 10, { debug: false } ]
