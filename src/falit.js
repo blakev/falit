@@ -1,5 +1,20 @@
 (function(module) {
-    var _ = require('underscore');
+    var _ = require('underscore'),
+        util = require('util');
+
+    var debug = null;
+
+    var options = {
+        debug: false,
+        enabled: true,
+        throwErrors: true
+    }
+
+    var updateOptions = function(options) {
+        debug = (process.env.NODE_DEBUG || options.debug) ? util.debug : function() {};
+    }
+
+    updateOptions(options);
 
     var paramTypes = [
         ['any', function(a) { return true; }],
@@ -19,7 +34,7 @@
         ['null', _.isNull],
         ['num', _.isNumber],
         ['posNum', function(a) { return _.isNumber(a) && a >= 0; }],
-        ['obj', function(a){ return _.isObject(a) && !_.isFunction(a) && !_.isArray(a); }],
+        ['obj', function(a) { return _.isObject(a) && !_.isFunction(a) && !_.isArray(a); }],
         ['regex', _.isRegExp],
         ['str', _.isString],
         ['undefined', _.isUndefined]
@@ -30,7 +45,7 @@
     }
 
     function isFloat(x) {
-       return typeof x === 'number' && isFinite(x) && x % 1 >= 0;
+        return typeof x === 'number' && isFinite(x) && x % 1 >= 0;
     }
 
     function isInt(x) {
@@ -100,13 +115,18 @@
                         }
                     }
                     
+                    // if no defaultValue was supplied, null it out
                     if (typeof defaultValue === 'undefined') {
                         defaultValue = null;
                     }
 
-                    return {    // return an object so we know if the type has been primed
+                    // return an object so we know if the type has been primed
+                    return {
+                        // name of the argument type, such as obj array int .. etc    
                         name: name,
-                        required: strict,
+                        // required = true, optional = false
+                        required: strict, 
+                        // default value is null on any required argument and optionals without a default
                         defaultValue: defaultValue, 
                         parse: function(argsPos, newValue) 
                         {
@@ -114,29 +134,45 @@
                                 verifyFuncMemo = verifyFunc(newValue);
 
                             if (verifyFuncMemo && customFuncMemo) {
-                                return {defValue: false, value: newValue, passed: verifyFuncMemo};
+                                return {
+                                    defValue: false, 
+                                    value: newValue, 
+                                    passed: verifyFuncMemo
+                                };
                             } else {
                                 var received = bitMaskFor(newValue);
 
                                 if (!customFuncMemo && verifyFuncMemo) {
                                     var estr = [
-                                        'Type validateFunction error!',
-                                        'Supplied value did not pass validation.',
-                                        'Expected "' + name + '" in position_' + argsPos + ' to pass.'
+                                        'Failed validation,', 
+                                        '  Supplied value did not pass',
+                                        '  Expected: [' + name + '], position: ' + argsPos
                                     ]
                                 } else {
                                     var estr = [
-                                        'Invalid type supplied!',
-                                        'Expected [' + name + '] in position_' + argsPos + '.',
-                                        'Received: [' + received.posTypes + '], with value: ' + received.value
+                                        'Invalid type,',
+                                        '  Expected: [' + name + '], position: ' + argsPos,
+                                        '  Received: [' + received.posTypes + '], value: ' + received.value
                                     ]
                                 }
 
                                 if (this.required) {
-                                    throw Error(estr.join('\n'));    
-                                } else {
-                                    return {defValue: true, value: defaultValue, passed: verifyFuncMemo};
+                                    var msg = estr.join('\n');
+
+                                    if (options.throwErrors) {
+                                        throw Error(msg);        
+                                    } else {
+                                        console.log(msg);
+                                    }
+                                    
                                 }
+                            
+                                return {
+                                    defValue: true, 
+                                    value: defaultValue, 
+                                    passed: verifyFuncMemo
+                                };
+                            
                             }
                         }
                     }
@@ -148,17 +184,33 @@
     }
 
 
+    var template = function() {
+        var originalArgs = _.rest(arguments, 0);
+
+        return {
+            'for': binder(req.func, function(func) {
+                return binder.apply(this, originalArgs.concat([func]));            
+            })
+        }
+    }
+
     var binder = function() {
         if (!_.isFunction(_.last(arguments))) {
-            throw new Error('Last argument is not a function; nothing to bind to!');
+            return {
+                with: function() { console.log('hi') }
+            }
         }
 
         var signature = _.initial(arguments);
 
         return _.partial(function(bindSignatureFuncs, bindFunc) {
-            var validArgs = _.rest(arguments, 2),
-                newSignature = getSignature(validArgs),
-                argsCount = 0;
+            var validArgs = _.rest(arguments, 2),  // skips over bindSignatureFuncs and bindFunc
+                newSignature = getSignature(validArgs), // gets the signature of the called function
+                argsCount = 0; // used for error reporting, to identify argument position
+
+            if (!options.enabled) {
+                return bindFunc.apply(this, validArgs);
+            }
 
             var transFuncs = _.map(bindSignatureFuncs, function(f) {
                 return (typeof f === 'function') ? f() : f;
@@ -197,8 +249,13 @@
 
             while (bSigIndex < transFuncs.length) {
                 if (transFuncs[bSigIndex].required) {
-                    var errMsg = 'Missing required [' + transFuncs[bSigIndex].name + '] parameter at position_' + argsCount;
-                    throw new Error(errMsg);
+                    var errMsg = 'Missing required [' + transFuncs[bSigIndex].name + '], in position: ' + argsCount;
+                    if (options.throwErrors) {
+                        throw new Error(errMsg);    
+                    } else {
+                        console.log('ERR: ' + errMsg);
+                    }
+                    
                 } else {
                     newArgs.push(transFuncs[bSigIndex].defaultValue);;
                 }
@@ -207,21 +264,27 @@
             }
 
             if (passes) {
-                bindFunc.apply(this, newArgs);
-            } else {
-                console.log('oh nohes! defdefdef');
-                bindFunc.apply(this, validArgs);
+                return bindFunc.apply(this, newArgs);
             }
-
         }, signature, _.last(arguments));
     }
 
-    var req = requiredTypes(true), opt = requiredTypes(false);
+    // instantiate the optional and required types to return through require('falitjs')
+    var opt = requiredTypes(false), req = requiredTypes(true);
 
     module.exports = {
-        force: binder,
+        binder: binder,
+        optional: opt,
         required: req,
-        optional: opt
+        template: template,
+        settings: binder(req.obj, function(settings) { // updating settings uses required obj
+            options = _.extend({}, options, settings);
+            updateOptions(options);
+            debug(JSON.stringify(options));
+        }),
+        whatIs: binder(req.any, function(e) {
+            return bitMaskFor(e);
+        })
     };
 })(typeof exports === 'undefined' ? this['falit'] = {} : module);
 
