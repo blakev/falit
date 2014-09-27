@@ -1,5 +1,8 @@
 Falit.js
 =====
+[![Downloads](http://img.shields.io/npm/dm/falitjs.svg)](https://www.npmjs.org/package/falitjs)
+[![License MIT](http://img.shields.io/badge/license-MIT-green.svg)](https://github.com/blakev/falitjs/blob/master/LICENSE)
+[![NPM Version](http://img.shields.io/npm/v/falitjs.svg)](https://www.npmjs.org/package/falitjs)
 
 Static-typing and optional parameters in native JavaScript.
 
@@ -13,11 +16,13 @@ var falit = require('falitjs'),
     opt = falit.optional,
     _ = require('underscore');
 
+// configure falit settings
 falit.settings({
     debug: true,
     throwErrors: false
 })
 
+// common usage pattern
 var add = falit.binder(
         req.int, // a 
         req.int, // b
@@ -26,6 +31,9 @@ var add = falit.binder(
             return a + b;
         });
 
+add(5, 5)
+
+// template usage pattern
 var tmpl = falit.template(req.int, req.int, opt.func(console.log)),
 
     mul = tmpl.for(function(a, b, callback){ return callback(a * b)}),
@@ -43,6 +51,7 @@ mul(5, mul(5, 5, dbl))
 Returns
 
 ```
+10
 10
 15
 250
