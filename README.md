@@ -8,7 +8,7 @@ npm install falitjs
 ```
 
 ```javascript
-var falit = require('./src/falit.js'),
+var falit = require('falitjs'),
     req = falit.required,
     opt = falit.optional,
     _ = require('underscore');

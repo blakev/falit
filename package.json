@@ -1,10 +1,10 @@
 {
-  "name": "faletjs",
-  "version": "0.0.1",
-  "description": "Optional parameters in JavaScript functions.",
-  "main": "src/falet.js",
+  "name": "falitjs",
+  "version": "0.1",
+  "description": "Parameter type and value validation in native JavaScript",
+  "main": "src/falit.js",
   "dependencies": {
-    "lodash": ">2.0.0"
+    "underscore": "*"
   },
   "devDependencies": {
     "mocha": "*"
@@ -14,21 +14,27 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/blakev/falet.git"
+    "url": "https://github.com/blakev/falit.git"
   },
   "keywords": [
     "function",
     "parameters",
     "arguments",
     "named",
-    "default"
+    "default",
+    "static",
+    "typing",
+    "required",
+    "optional",
+    "validation",
+    "checking"
   ],
   "author": "Blake VandeMerwe",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/blakev/falet/issues",
+    "url": "https://github.com/blakev/falit/issues",
     "email": "blakev@null.net"
   },
-  "homepage": "https://github.com/blakev/falet",
+  "homepage": "https://github.com/blakev/falit",
   "engine": "node > 0.10"
 }
