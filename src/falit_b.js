@@ -1,6 +1,7 @@
 var _ = require('underscore');
 
 var paramTypes = [
+    ['any', function(a) { return true; }],
     ['args', _.isArguments],
     ['array', _.isArray],
     ['bool', _.isBoolean],
@@ -97,8 +98,10 @@ var requiredTypes = function(strict) {
                 }
                 
 
-                return {    // return an object so we know if the type has been primed    
+                return {    // return an object so we know if the type has been primed
+                    name: name,
                     required: strict,
+                    defaultValue: defaultValue, 
                     parse: function(argsPos, newValue) 
                     {
                         var customFuncMemo = (this.required) ? customFunc(newValue) : true,
@@ -174,18 +177,33 @@ var binder = function() {
 
             } else { // optional parameter
                 while (bSigIndex < transFuncs.length) {
-                    
+
                     var posPass = transFuncs[bSigIndex++].parse(argsCount++, f.value);
 
-                    if (posPass.defValue || posPass.passed) {
                         newArgs.push(posPass.value);
-                    } else {
-                        passes = false;
-                    }
 
+                    if (posPass.passed) {
+                        break;
+                    }
                 }
             }
         })
+
+        console.log(transFuncs)
+        console.log(newSignature)
+        console.log(bSigIndex);
+
+        while (bSigIndex < transFuncs.length) {
+            if (transFuncs[bSigIndex].required) {
+                var errMsg = 'Mising required [' + transFuncs[bSigIndex].name + '] parameter at position_' + argsCount;
+                throw new Error(errMsg);
+            } else {
+                newArgs.push(transFuncs[bSigIndex].defaultValue);;
+            }
+
+            bSigIndex++;
+            argsCount;
+        }
 
         if (passes) {
             bindFunc.apply(this, newArgs);
@@ -200,13 +218,6 @@ var binder = function() {
 var req = requiredTypes(true),
     opt = requiredTypes(false);
 
+var test = binder(req.str, req.any, console.log)
 
-function testFunc(timeDelay, options, callback) {
-    callback(
-        timeDelay, options, _.isFunction(callback)
-    )
-}
-
-var testFunc = binder(req.int, opt.obj({debug: true}), req.func, testFunc);
-
-testFunc(console.log)
+test('blake', 2);
