@@ -214,8 +214,7 @@
         }, signature, _.last(arguments));
     }
 
-    var req = requiredTypes(true),
-        opt = requiredTypes(false);
+    var req = requiredTypes(true), opt = requiredTypes(false);
 
     module.exports = {
         force: binder,
