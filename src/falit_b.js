@@ -167,8 +167,8 @@ var binder = function() {
 
             if (transFuncs[bSigIndex].required) {
 
-                var posPass = transFuncs[bSigIndex].parse(argsCount++, f.value);
-                    newArgs.push(posPass);
+                var posPass = transFuncs[bSigIndex++].parse(argsCount++, f.value);
+                    newArgs.push(posPass.value);
 
                 passes = passes && posPass;
 
@@ -176,8 +176,6 @@ var binder = function() {
                 while (bSigIndex < transFuncs.length) {
                     
                     var posPass = transFuncs[bSigIndex++].parse(argsCount++, f.value);
-
-                    console.log(posPass);
 
                     if (posPass.defValue || posPass.passed) {
                         newArgs.push(posPass.value);
@@ -209,6 +207,6 @@ function testFunc(timeDelay, options, callback) {
     )
 }
 
-var testFunc = binder(opt.int, opt.obj({debug: true}), req.func, testFunc);
+var testFunc = binder(req.int, opt.obj({debug: true}), req.func, testFunc);
 
 testFunc(console.log)
