@@ -45,7 +45,7 @@
     }
 
     function isFloat(x) {
-        return typeof x === 'number' && isFinite(x) && x % 1 >= 0;
+        return typeof x === 'number' && isFinite(x) && Math.abs(x % 1) >= 0;
     }
 
     function isInt(x) {
