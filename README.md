@@ -239,8 +239,8 @@ Example:
   value: [ 1, 2, 3 ] }
 
 >>> falit.whatIs(-1.5)
-{ posTypes: [ 'any', 'finite', 'negNum', 'num' ],
-  bitMask: 41089,
+{ posTypes: [ 'any', 'finite', 'float', 'negNum', 'num' ],
+  bitMask: 41345,
   value: -1.5 }
 
 >>> falit.whatIs(undefined)

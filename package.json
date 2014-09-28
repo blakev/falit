@@ -1,6 +1,6 @@
 {
   "name": "falitjs",
-  "version": "0.1.0-1",
+  "version": "0.1.0-2",
   "description": "Static-typing and optional parameters in native JavaScript.",
   "main": "src/falit.js",
   "dependencies": {
